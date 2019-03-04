@@ -19,7 +19,7 @@ def getRotationFromImage(filepath):
         if exif[orientation] == 3:
             return 180
         elif exif[orientation] == 6:
-            return 270
+            return -270
         elif exif[orientation] == 8:
             return -90
         else:
@@ -94,6 +94,7 @@ class CustomWidget(QLabel):
             newImg = img.resize([img.size[0]/scaleFactor,img.size[1]/scaleFactor],
                             resample=Image.BICUBIC)
             self.writeImageToDir(newImg,exif)
+            newImg.close()
         else:
             self.writeImageToDir(img,exif)
 
@@ -108,16 +109,20 @@ class CustomWidget(QLabel):
         img = img_raw.rotate(-1*self.currentRotation, expand=True)
         
         cScaleFactor = float(img.size[0])/float(self.width())
-        cropBox = [cScaleFactor*self.initialPoint[0],cScaleFactor*self.initialPoint[1],cScaleFactor*self.currentPoint[0],
+        cropBox_1 = [cScaleFactor*self.initialPoint[0],cScaleFactor*self.initialPoint[1],cScaleFactor*self.currentPoint[0],
                    cScaleFactor*self.currentPoint[1]]
+        cropBox = [min(cropBox_1[0],cropBox_1[2]),min(cropBox_1[1],cropBox_1[3]),
+                   max(cropBox_1[0],cropBox_1[2]),max(cropBox_1[1],cropBox_1[3])]
         newImg1 = img.crop(box=cropBox)
         scaleFactor = max(1,math.sqrt(newImg1.size[0]*newImg1.size[1]/self.targetImageArea))
         if scaleFactor > 1:
             newImg2 = newImg1.resize([newImg1.size[0]/scaleFactor,newImg1.size[1]/scaleFactor],
                             resample=Image.BICUBIC)
-            self.writeImageToDir(newImg2.rotate(self.currentRotation),exif)
+            self.writeImageToDir(newImg2.rotate(self.currentRotation,expand=True),exif)
+            newImg2.close()
         else:
-            self.writeImageToDir(newImg1.rotate(self.currentRotation),exif)
+            self.writeImageToDir(newImg1.rotate(self.currentRotation,expand=True),exif)
+            newImg1.close()
 
         img_raw.close()
 
@@ -195,6 +200,6 @@ if __name__ == '__main__':
 
     import sys
     app = QApplication(sys.argv)
-    win = Window('/home/karl/171___09')
+    win = Window('/home/karl/100MSDCF')
     win.show()
     sys.exit(app.exec_())
