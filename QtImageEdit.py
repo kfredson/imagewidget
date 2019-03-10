@@ -69,14 +69,19 @@ class CustomWidget(QLabel):
     def advance(self):
         if self.currentFile < len(self.fileList)-1:
             self.currentFile += 1
-            self.parentWindow.setWindowTitle(self.fileList[self.currentFile])
-            self.display()
+        else:
+            self.currentFile = 0
+        self.parentWindow.setWindowTitle(self.fileList[self.currentFile])
+        self.display()
 
     def previous(self):
         if self.currentFile > 0:
             self.currentFile -= 1
-            self.parentWindow.setWindowTitle(self.fileList[self.currentFile])
-            self.display()
+        else:
+            self.currentFile = len(self.fileList)-1
+        self.parentWindow.setWindowTitle(self.fileList[self.currentFile])
+        self.display()
+            
 
     #Create 'imagewidget' directory in current directory if it doesn't exist, then save image
     def writeImageToDir(self,img,exif):
@@ -89,9 +94,9 @@ class CustomWidget(QLabel):
         img = Image.open(self.directory+'/'+self.fileList[self.currentFile])
         exif = img.info['exif']
 
-        scaleFactor = max(1,math.sqrt(img.size[0]*img.size[1]/self.targetImageArea))
+        scaleFactor = max(1,math.sqrt(float(img.size[0]*img.size[1])/self.targetImageArea))
         if scaleFactor > 1:
-            newImg = img.resize([img.size[0]/scaleFactor,img.size[1]/scaleFactor],
+            newImg = img.resize([int(img.size[0]/scaleFactor),int(img.size[1]/scaleFactor)],
                             resample=Image.BICUBIC)
             self.writeImageToDir(newImg,exif)
             newImg.close()
@@ -114,9 +119,9 @@ class CustomWidget(QLabel):
         cropBox = [min(cropBox_1[0],cropBox_1[2]),min(cropBox_1[1],cropBox_1[3]),
                    max(cropBox_1[0],cropBox_1[2]),max(cropBox_1[1],cropBox_1[3])]
         newImg1 = img.crop(box=cropBox)
-        scaleFactor = max(1,math.sqrt(newImg1.size[0]*newImg1.size[1]/self.targetImageArea))
+        scaleFactor = max(1,math.sqrt(float(newImg1.size[0]*newImg1.size[1])/self.targetImageArea))
         if scaleFactor > 1:
-            newImg2 = newImg1.resize([newImg1.size[0]/scaleFactor,newImg1.size[1]/scaleFactor],
+            newImg2 = newImg1.resize([int(newImg1.size[0]/scaleFactor),int(newImg1.size[1]/scaleFactor)],
                             resample=Image.BICUBIC)
             self.writeImageToDir(newImg2.rotate(self.currentRotation,expand=True),exif)
             newImg2.close()
